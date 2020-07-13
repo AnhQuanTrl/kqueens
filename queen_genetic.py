@@ -45,7 +45,7 @@ def mutate(x):  #randomly changing the value of a random index of a chromosome
 def natural_selection(population, new_population, maxFitness):
     total_population = population + new_population
     new_total_population = sorted(total_population, key= lambda x: fitness(x, maxFitness))[::-1]
-    return new_total_population[0:int(len(total_population)/1.5)] if len(population) < 5000 else new_total_population[0:int(len(total_population)/2)]
+    return new_total_population[0:int(len(total_population)/2)]
 
 def genetic_queen(population, fitness, maxFitness):
     mutation_probability = 0.03
@@ -83,7 +83,7 @@ def solve(nq):
     output.append(initial)
 
     while not maxFitness in [fitness(chrom, maxFitness) for chrom in population]:
-        # print("=== Generation {} ===".format(generation), len(population))
+        print("=== Generation {} ===".format(generation), len(population))
         population, generation_output = genetic_queen(population, fitness, maxFitness)
         # print("")
         # ranks = sorted([(x, i) for (i, x) in enumerate(population)], key=lambda item: (fitness(item[0], maxFitness), item[1]), reverse=True)[:2]
@@ -93,7 +93,7 @@ def solve(nq):
         output.append(generation_output[-1])
         generation += 1
     # [print(x) for x in output]
-    print(json.dumps({"generation": output, "time": time.time() - start_time}, indent=4, sort_keys=True))
+    # print(json.dumps({"generation": output, "time": time.time() - start_time}, indent=4, sort_keys=True))
     return output, time.time() - start_time
     # chrom_out = []
     # print("Solved in Generation {}!".format(generation - 1))
@@ -104,8 +104,8 @@ def solve(nq):
     #         chrom_out = chrom
     #         print_chromosome(chrom)
 
-if __name__ == "__main__":
-    solve(5)
+# if __name__ == "__main__":
+#     solve(20)
     # nq = int(input("Enter Number of Queens: ")) #say N = 8
     # maxFitness = (nq*(nq-1))/2  # 8*7/2 = 28
     # population = [random_chromosome(nq) for _ in range(100)]
