@@ -4,20 +4,31 @@ from functools import reduce
 from itertools import groupby
 import time
 import json
-def random_chromosome(size): #making random chromosomes
-    return [ random.randint(1, size) for _ in range(size)]
+
+
+def random_chromosome(size):  # making random chromosomes
+    return [random.randint(1, size) for _ in range(size)]
+
 
 def fitness(chromosome, maxFitness):
-    horizontal_collisions = sum([chromosome.count(queen)-1 for queen in chromosome])/2
-    left_diagonal_collisions_mat = sorted(reduce(lambda x,y: x + [y - len(x)], chromosome, []))
-    left_diagonal_collisions = [len(list(group)) for key, group in groupby(left_diagonal_collisions_mat)]
-    right_diagonal_collisions_mat = sorted(reduce(lambda x,y: x + [y + len(x)], chromosome, []))
-    right_diagonal_collisions = [len(list(group)) for key, group in groupby(right_diagonal_collisions_mat)]
-    diagonal_collisions = reduce(lambda x, y: x + (y*(y-1))/2, left_diagonal_collisions + right_diagonal_collisions, 0) 
-    return int(maxFitness - (horizontal_collisions + diagonal_collisions)) 
+    horizontal_collisions = sum(
+        [chromosome.count(queen)-1 for queen in chromosome])/2
+    left_diagonal_collisions_mat = sorted(
+        reduce(lambda x, y: x + [y - len(x)], chromosome, []))
+    left_diagonal_collisions = [
+        len(list(group)) for key, group in groupby(left_diagonal_collisions_mat)]
+    right_diagonal_collisions_mat = sorted(
+        reduce(lambda x, y: x + [y + len(x)], chromosome, []))
+    right_diagonal_collisions = [
+        len(list(group)) for key, group in groupby(right_diagonal_collisions_mat)]
+    diagonal_collisions = reduce(
+        lambda x, y: x + (y*(y-1))/2, left_diagonal_collisions + right_diagonal_collisions, 0)
+    return int(maxFitness - (horizontal_collisions + diagonal_collisions))
+
 
 def probability(chromosome, fitness, maxFitness):
     return fitness(chromosome, maxFitness) / maxFitness
+
 
 def random_pick(population, probabilities):
     populationWithProbabilty = zip(population, probabilities)
@@ -29,23 +40,28 @@ def random_pick(population, probabilities):
             return c
         upto += w
     assert False, "Shouldn't get here"
-        
-def reproduce(x, y): #doing cross_over between two chromosomes
+
+
+def reproduce(x, y):  # doing cross_over between two chromosomes
     n = len(x)
     c = random.randint(0, n - 1)
     return x[0:c] + y[c:n]
 
-def mutate(x):  #randomly changing the value of a random index of a chromosome
+
+def mutate(x):  # randomly changing the value of a random index of a chromosome
     n = len(x)
     c = random.randint(0, n - 1)
     m = random.randint(1, n)
     x[c] = m
     return x
 
+
 def natural_selection(population, new_population, maxFitness):
     total_population = population + new_population
-    new_total_population = sorted(total_population, key= lambda x: fitness(x, maxFitness))[::-1]
+    new_total_population = sorted(
+        total_population, key=lambda x: fitness(x, maxFitness))[::-1]
     return new_total_population[0:int(len(total_population)/2)]
+
 
 def genetic_queen(population, fitness, maxFitness):
     mutation_probability = 0.03
@@ -53,9 +69,10 @@ def genetic_queen(population, fitness, maxFitness):
     father, mother, best_child = None, None, None
     probabilities = [probability(n, fitness, maxFitness) for n in population]
     for _ in range(len(population)):
-        x = random_pick(population, probabilities) #best chromosome 1
-        y = random_pick(population, probabilities) #best chromosome 2
-        child = reproduce(x, y) #creating two new chromosomes from the best 2 chromosomes
+        x = random_pick(population, probabilities)  # best chromosome 1
+        y = random_pick(population, probabilities)  # best chromosome 2
+        # creating two new chromosomes from the best 2 chromosomes
+        child = reproduce(x, y)
         if random.random() < mutation_probability:
             child = mutate(child)
         # print_chromosome(child)
@@ -64,48 +81,61 @@ def genetic_queen(population, fitness, maxFitness):
             father, mother, best_child = x, y, child
         elif fitness(child, maxFitness) > fitness(best_child, maxFitness):
             father, mother, best_child = x, y, child
-        if fitness(child, maxFitness) == maxFitness: break
+        if fitness(child, maxFitness) == maxFitness:
+            break
     new_population = natural_selection(population, new_population, maxFitness)
     return new_population, [father, mother, best_child]
 
+
 def print_chromosome(chrom):
     print("Chromosome = {},  Fitness = {}"
-        .format(str(chrom), fitness(chrom)))
+          .format(str(chrom), fitness(chrom)))
+
 
 def solve(nq):
     start_time = time.time()
     maxFitness = (nq * (nq - 1)) / 2  # 8*7/2 = 28
     population = [random_chromosome(nq) for _ in range(100)]
-    ranks = sorted(population, key= lambda x: fitness(x, maxFitness), reverse= True)
-    initial = {'state':[{'x':y + 1,'y':z} for (y,z) in enumerate(ranks[0])], 'fitnessValue': fitness(ranks[0], maxFitness), 'parents':[]}
-    generation = 1
+    ranks = sorted(population, key=lambda x: fitness(
+        x, maxFitness), reverse=True)
+    initial = {'state': [{'x': y + 1, 'y': z} for (y, z) in enumerate(
+        ranks[0])], 'fitnessValue': fitness(ranks[0], maxFitness), 'parents': []}
+    generation = 0
     output = []
     output.append(initial)
 
+    # while not maxFitness in [fitness(chrom, maxFitness) for chrom in population] and generation <= 3000:
     while not maxFitness in [fitness(chrom, maxFitness) for chrom in population]:
-        print("=== Generation {} ===".format(generation), len(population))
-        population, generation_output = genetic_queen(population, fitness, maxFitness)
+        # print("=== Generation {} ===".format(generation), len(population))
+        population, generation_output = genetic_queen(
+            population, fitness, maxFitness)
         # print("")
         # ranks = sorted([(x, i) for (i, x) in enumerate(population)], key=lambda item: (fitness(item[0], maxFitness), item[1]), reverse=True)[:2]
-        generation_output = list(map(lambda x: {'state':[{'x':y + 1,'y':z} for (y,z) in enumerate(x)], 'fitnessValue': fitness(x, maxFitness), 'parents': []}, generation_output))
+        generation_output = list(map(lambda x: {'state': [{'x': y + 1, 'y': z} for (y, z) in enumerate(
+            x)], 'fitnessValue': fitness(x, maxFitness), 'parents': []}, generation_output))
         # print("Maximum Fitness = {}".format(max([fitness(n, maxFitness) for n in population])))
         generation_output[-1]['parents'] = generation_output[:2]
         output.append(generation_output[-1])
         generation += 1
     # [print(x) for x in output]
     # print(json.dumps({"generation": output, "time": time.time() - start_time}, indent=4, sort_keys=True))
-    return output, time.time() - start_time
-    # chrom_out = []
-    # print("Solved in Generation {}!".format(generation - 1))
-    # for chrom in population:
-    #     if fitness(chrom) == maxFitness:
-    #         print("");
-    #         print("One of the solutions: ")
-    #         chrom_out = chrom
-    #         print_chromosome(chrom)
+    # if generation > 3000:
+    #     return output, time.time() - start_time, False
+    # return output, time.time() - start_time, True
+    return generation + 1
 
-# if __name__ == "__main__":
-#     solve(20)
+
+if __name__ == "__main__":
+    output = {}
+    for queens in range(4, 21):
+        temp = []
+        print("QUEENS:", queens)
+        for _ in range(20):
+            temp.append(solve(queens))
+        output[str(queens)] = temp
+    print(output)
+    with open('100.txt', 'w') as file:
+        file.write(json.dumps(output))
     # nq = int(input("Enter Number of Queens: ")) #say N = 8
     # maxFitness = (nq*(nq-1))/2  # 8*7/2 = 28
     # population = [random_chromosome(nq) for _ in range(100)]
@@ -126,7 +156,7 @@ def solve(nq):
     #         print("One of the solutions: ")
     #         chrom_out = chrom
     #         print_chromosome(chrom)
-            
+
     # board = []
     #
     # for x in range(nq):
@@ -142,8 +172,3 @@ def solve(nq):
     #
     # print()
     # print_board(board)
-            
-           
-            
-    
-

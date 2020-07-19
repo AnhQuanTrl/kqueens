@@ -46,10 +46,16 @@ def min_conflict_solve():
 def ga():
     req_data = request.get_json()
     k = req_data['k']
-    generations, time = solve(k)
-    response = app.response_class(
-        response=json.dumps({"generations": generations, "time": time}),
-        status=200,
-        mimetype='application/json'
-    )
+    generations, time, isHalt = solve(k)
+    if not isHalt:
+        response = app.response_class(
+            response="Server TimeOut",
+            status=500
+        )
+    else:
+        response = app.response_class(
+            response=json.dumps({"generations": generations, "time": time}),
+            status=200,
+            mimetype='application/json'
+        )
     return response
