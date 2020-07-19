@@ -38,8 +38,9 @@ class CSP(Generic[V, D]):
 
     def conflict_value(self, variable: V, value: D) -> int:
         state = self.current_state.next_state(variable, value)
-        conflicted_variables: List[V] = []
+        # conflicted_variables: List[V] = []
+        count = 0
         for constraint in self.constraints[variable]:
-            local_conflicted_variables = constraint.get_conflicted(state.assignment)
-            conflicted_variables.extend(local_conflicted_variables)
-        return len(list(set(conflicted_variables)))
+            if not constraint.is_satisfied(state.assignment):
+                count = count + 1
+        return count

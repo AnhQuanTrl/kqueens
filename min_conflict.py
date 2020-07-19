@@ -27,6 +27,7 @@ class MinConflict(Generic[V, D]):
             _: int
             best_value: D
             possible_values = [(csp.conflict_value(choice, value), value) for value in csp.domains[choice]]
+
             col, best_value = min(possible_values, key=lambda x: (x[0], random.random))
             if history.count(csp.current_state.next_state(choice, best_value)) > 3:  # repeat too many time?
                 new_values = possible_values.copy()
@@ -38,5 +39,4 @@ class MinConflict(Generic[V, D]):
                 history = history[1:] + [csp.current_state]
             else:
                 history.append(csp.current_state)
-
         return None, steps, time.time() - start_time
