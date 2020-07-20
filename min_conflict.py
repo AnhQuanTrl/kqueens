@@ -35,7 +35,7 @@ class MinConflict(Generic[V, D]):
                 _, best_value = min(new_values, key=lambda x: (x[0], random.random))  # find a new best_value
             steps.append({"choice": {"x": choice+1, "y": best_value+1}, "conflicts": [{"position": {"x": choice+1, "y": i + 1}, "value": value[0]} for i, value in enumerate(possible_values)]})
             csp.current_state = csp.current_state.next_state(choice, best_value)
-            if len(history) == 10:  # enforce recent 10 histories
+            if len(history) == 20:  # enforce recent 10 histories
                 history = history[1:] + [csp.current_state]
             else:
                 history.append(csp.current_state)
