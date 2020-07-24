@@ -48,7 +48,7 @@ def main(argv: List[str]) -> None:
             min_conflict: MinConflict[int, int] = MinConflict(csp, State[int, int]({i: 0 for i in range(size)}),
                                                               10000)
             solution, steps, time = min_conflict.solve()
-            if len(steps) != 1000:
+            if len(steps) != 10000:
                 count = count + 1
             total += time
         result.append(count)

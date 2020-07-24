@@ -18,6 +18,7 @@ class MinConflict(Generic[V, D]):
         start_time = time.time()
         csp = self.csp
         history: List[State[V, D]] = [csp.current_state]
+        maxHistorySize = 15
         steps: List[Dict[str, object]] = []
         for i in range(self.max_steps):
             conflicted_variables = self.csp.conflicted()
@@ -29,13 +30,13 @@ class MinConflict(Generic[V, D]):
             possible_values = [(csp.conflict_value(choice, value), value) for value in csp.domains[choice]]
 
             col, best_value = min(possible_values, key=lambda x: (x[0], random.random))
-            if history.count(csp.current_state.next_state(choice, best_value)) > 3:  # repeat too many time?
-                new_values = possible_values.copy()
+            new_values = possible_values.copy()
+            while new_values and history.count(csp.current_state.next_state(choice, best_value)) > 3:  # repeat too many time?
                 new_values.remove((col, best_value))
-                _, best_value = min(new_values, key=lambda x: (x[0], random.random))  # find a new best_value
+                col, best_value = min(new_values, key=lambda x: (x[0], random.random))  # find a new best_value
             steps.append({"choice": {"x": choice+1, "y": best_value+1}, "conflicts": [{"position": {"x": choice+1, "y": i + 1}, "value": value[0]} for i, value in enumerate(possible_values)]})
             csp.current_state = csp.current_state.next_state(choice, best_value)
-            if len(history) == 20:  # enforce recent 10 histories
+            if len(history) == maxHistorySize:  # enforce recent 10 histories
                 history = history[1:] + [csp.current_state]
             else:
                 history.append(csp.current_state)
